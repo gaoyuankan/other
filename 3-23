@@ -1,0 +1,54 @@
+date: tuesday 3.23
+
+plan:  完成 local build 
+	学习基于 Centos dockerfile 完成 Ubuntu dockerfile 下的环境搭建
+	
+issues： 直接 sudo apt-get update -qq 失败
+	 先 sudo apt-get update 后，再 sudo apt-get update -qq 成功。还不知道具体原因。
+	 
+	kgy@kgy-ubuntu:~/OpenROAD-flow-private/tools/yosys$ sudo apt-get update -qq
+	[sudo] password for kgy: 
+	W: Failed to fetch http://ftp.sjtu.edu.cn/ubuntu/dists/focal/InRelease  Cannot initiate the connection to ftp.sjtu.edu.cn:80 (2001:da8:8000:6023::230). - connect (101: Network is unreachable) Could not connect to ftp.sjtu.edu.cn:80 (202.120.58.157), connection timed out
+	W: Failed to fetch http://ftp.sjtu.edu.cn/ubuntu/dists/focal-updates/InRelease  Cannot initiate the connection to ftp.sjtu.edu.cn:80 (2001:da8:8000:6023::230). - connect (101: Network is 	unreachable)
+	W: Failed to fetch http://ftp.sjtu.edu.cn/ubuntu/dists/focal-backports/InRelease  Cannot initiate the connection to ftp.sjtu.edu.cn:80 (2001:da8:8000:6023::230). - connect (101: Network is unreachable)
+	W: Failed to fetch http://ftp.sjtu.edu.cn/ubuntu/dists/focal-security/InRelease  Cannot initiate the connection to ftp.sjtu.edu.cn:80 (2001:da8:8000:6023::230). - connect (101: Network is unreachable)
+	W: Some index files failed to download. They have been ignored, or old ones used instead.
+	kgy@kgy-ubuntu:~/OpenROAD-flow-private/tools/yosys$ sudo apt-get update
+	Hit:1 https://download.docker.com/linux/ubuntu focal InRelease
+	Hit:2 http://lenovo.archive.canonical.com focal InRelease                                           
+	Hit:3 http://ftp.sjtu.edu.cn/ubuntu focal InRelease                               
+	Hit:4 http://ftp.sjtu.edu.cn/ubuntu focal-updates InRelease 
+	Hit:5 http://ftp.sjtu.edu.cn/ubuntu focal-backports InRelease
+	Hit:6 http://ftp.sjtu.edu.cn/ubuntu focal-security InRelease
+	Reading package lists... Done
+	kgy@kgy-ubuntu:~/OpenROAD-flow-private/tools/yosys$ sudo apt-get update -qq
+	kgy@kgy-ubuntu:~/OpenROAD-flow-private/tools/yosys$ 
+
+	  
+
+conclusion：
+	ENV 指令允许多个 <key>=<value> 
+	（ENV 指令还允许另一种语法 ENV <key> <value>，省略了中间的等号。）
+	（这种语法不允许在一条 ENV 指令中设置多个环境变量，可能会造成混淆。）（支持这种替代语法为了向后兼容，但由于上述原因不鼓励使用。）
+	（ENV设置的环境变量，可以使用 docker inspect命令来查看。同时还可以使用docker run --env <key>=<value>来修改环境变量。）
+	
+	由于镜像的层次文件系统，ENV定义的环境变量在后续层次中才能够被应用。使用 ENV 设置的环境变量将持久存在于容器内。
+	
+	如果只在构建过程中需要环境变量，而不是在最终镜像中，请考虑为单个命令设置一个值，或者使用 ARG，它不会在最终镜像中持久存在。
+	
+	apt-get autoclean:
+	  将已经删除了的软件包的.deb安装文件从硬盘中删除掉。
+
+	apt-get clean:
+	  类似上面的命令，但它删除包缓存中的所有包。这是个很好的做法，因为多数情况下这些包没有用了。但如果你是拨号上网的话，就得重新考虑了。
+
+	apt-get autoremove:
+	 删除为了满足其他软件包的依赖而安装的，但现在不再需要的软件包。
+	
+	apt-get remove 软件包名称：
+	  删除已安装的软件包（保留配置文件）。
+
+	apt-get --purge remove 软件包名称：
+	  删除已安装包（不保留配置文件)
+
+	
